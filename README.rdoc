@@ -11,9 +11,9 @@ When digging into the problem it was clear that it was a problem with Rack::Cach
     parts << @request.path_info
   ..snip..
 
-When looking at the request it seems Lighttpd+FCGI doesn’t fill in the env[‘PATH_INFO’], which results in always having the same cache key, thus the same page.
+When looking at the request it seems Lighttpd+FCGI doesn't fill in the env['PATH_INFO�], which results in always having the same cache key, thus the same page.
 
-To solve this problem I’ve created this small Rack middleware gem that sets PATHINFO from REQUESTURI (Like Passenger does with Nginx)
+To solve this problem I've created this small Rack middleware gem that sets PATH_INFO from REQUEST_URI (Like Passenger does with Nginx)
 
 == Installation
 

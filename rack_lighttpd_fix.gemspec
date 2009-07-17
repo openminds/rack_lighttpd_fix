@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name    = 'rack_lighttpd_fix'
-  s.version = '0.1'
+  s.version = '0.1.0'
   s.date    = '2009-07-17'
   
   s.summary = "Lighttpd fix to set correct PATH_INFO"
