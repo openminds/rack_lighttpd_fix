@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>File: README.rdoc</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+  <meta http-equiv="Content-Script-Type" content="text/javascript" />
+  <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+  <script type="text/javascript">
+  // <![CDATA[
+
+  function popupCode( url ) {
+    window.open(url, "Code", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=150,width=400")
+  }
+
+  function toggleCode( id ) {
+    if ( document.getElementById )
+      elem = document.getElementById( id );
+    else if ( document.all )
+      elem = eval( "document.all." + id );
+    else
+      return false;
+
+    elemStyle = elem.style;
+    
+    if ( elemStyle.display != "block" ) {
+      elemStyle.display = "block"
+    } else {
+      elemStyle.display = "none"
+    }
+
+    return true;
+  }
+  
+  // Make codeblocks hidden by default
+  document.writeln( "<style type=\"text/css\">div.method-source-code { display: none }</style>" )
+  
+  // ]]>
+  </script>
+
+</head>
+<body>
+
+
+
+  <div id="fileHeader">
+    <h1>README.rdoc</h1>
+    <table class="header-table">
+    <tr class="top-aligned-row">
+      <td><strong>Path:</strong></td>
+      <td>README.rdoc
+      </td>
+    </tr>
+    <tr class="top-aligned-row">
+      <td><strong>Last Update:</strong></td>
+      <td>Fri Jul 17 14:43:21 +0200 2009</td>
+    </tr>
+    </table>
+  </div>
+  <!-- banner header -->
+
+  <div id="bodyContent">
+
+
+
+  <div id="contextContent">
+
+    <div id="description">
+      <h1>Rack::LighttpdFix</h1>
+<h2>Why?</h2>
+<p>
+On some of the Openminds shared hosting servers we run a Lighttpd+FCGI
+stack for Ruby/Rails applications. This week we got a complaint from a user
+saying they had a problem with the latest Radiant 0.8. Every page he loaded
+was the same as the first page he opened since the last server restart.
+</p>
+<p>
+When digging into the problem it was clear that it was a problem with
+Rack::Cache, which only created 1 meta-store entry and served that from
+there on. On investigation Rack::Cache::Key.call(@request) always returned
+<a
+href="http://example.com:80/dispatch.fcgi?">example.com:80/dispatch.fcgi?</a>.
+Apparently the last part of the key gets created by scriptname and
+pathinfo:
+</p>
+<pre>
+  ..snip..
+    parts &lt;&lt; @request.script_name
+    parts &lt;&lt; @request.path_info
+  ..snip..
+</pre>
+<p>
+When looking at the request it seems Lighttpd+FCGI doesn’t fill in the
+env[‘PATH_INFO’], which results in always having the same cache key,
+thus the same page.
+</p>
+<p>
+To solve this problem I’ve created this small Rack middleware gem that
+sets PATHINFO from REQUESTURI (Like Passenger does with Nginx)
+</p>
+<h2>Configuration for Rails</h2>
+<pre>
+  # in production.rb
+  config.middleware.insert_before ::Rack::Cache, ::Rack::LighttpdFix
+
+  # or for Radiant
+  config.middleware.insert_before ::Radiant::Cache, ::Rack::LighttpdFix
+</pre>
+
+    </div>
+
+
+   </div>
+
+
+  </div>
+
+
+    <!-- if includes -->
+
+    <div id="section">
+
+
+
+
+
+      
+
+
+    <!-- if method_list -->
+
+
+  </div>
+
+
+<div id="validator-badges">
+  <p><small><a href="http://validator.w3.org/check/referer">[Validate]</a></small></p>
+</div>
+
+</body>
+</html>

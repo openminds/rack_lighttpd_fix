@@ -1,0 +1,31 @@
+= Rack::LighttpdFix
+
+== Why?
+
+On some of the Openminds shared hosting servers we run a Lighttpd+FCGI stack for Ruby/Rails applications. This week we got a complaint from a user saying they had a problem with the latest Radiant 0.8. Every page he loaded was the same as the first page he opened since the last server restart.
+
+When digging into the problem it was clear that it was a problem with Rack::Cache, which only created 1 meta-store entry and served that from there on. On investigation Rack::Cache::Key.call(@request) always returned http://example.com:80/dispatch.fcgi?. Apparently the last part of the key gets created by scriptname and pathinfo:
+
+  ..snip..
+    parts << @request.script_name
+    parts << @request.path_info
+  ..snip..
+
+When looking at the request it seems Lighttpd+FCGI doesn’t fill in the env[‘PATH_INFO’], which results in always having the same cache key, thus the same page.
+
+To solve this problem I’ve created this small Rack middleware gem that sets PATHINFO from REQUESTURI (Like Passenger does with Nginx)
+
+== Installation
+
+You can just install this as a gem:
+  gem install -s http://gems.github.com defv-rack_lighttpd_fix
+
+== Configuration for Rails
+  
+  # in production.rb
+  require 'rack/lighttpd_fix'
+
+  config.middleware.insert_before ::Rack::Cache, ::Rack::LighttpdFix
+  
+  # or for Radiant
+  config.middleware.insert_before ::Radiant::Cache, ::Rack::LighttpdFix
